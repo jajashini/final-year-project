@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; gap: 30px; align-items: start;">
+    <div style="flex: 2;">
+        <div class="card">
+            <h1>{{ data.title }}</h1>
+            <p style="color: var(--text-dim);">Recorded at {{ data.location|default:"Unknown Location" }} | Depth: {{ data.depth|default:"0.0" }}m</p>
+
+            <div
+                style="margin-top: 25px; background: #000; min-height: 400px; display: flex; justify-content: center; align-items: center; border-radius: 8px; overflow: hidden; border: 1px solid var(--accent);">
+                {% if data.file_type == 'image' %}
+                <img src="{{ data.file.url }}" style="max-width: 100%; height: auto;" alt="Underwater Image">
+                {% else %}
+                <video controls style="width: 100%;">
+                    <source src="{{ data.file.url }}">
+                    Your browser does not support the video tag.
+                </video>
+                {% endif %}
+            </div>
+
+            {% if data.enhanced_file %}
+            <h3 style="margin-top: 30px;">Enhanced Version</h3>
+            <div style="margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--primary);">
+                <img src="{{ data.enhanced_file.url }}" style="max-width: 100%; height: auto;" alt="Enhanced Image">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="flex: 1;">
+        <div class="card">
+            <h3>Analysis Controls</h3>
+            <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px;">Execute deep learning pipelines
+                on this dataset.</p>
+
+            <form method="post" action="{% url 'process_data' data.pk %}">
+                {% csrf_token %}
+                <button name="action" value="enhance" class="btn btn-primary"
+                    style="width: 100%; margin-bottom: 10px;">Enhance Quality</button>
+                <button name="action" value="detect" class="btn btn-solid" style="width: 100%; margin-bottom: 20px;">Run AI
+                    Detection</button>
+            </form>
+
+            <form action="{% url 'data_delete' data.pk %}" method="POST" onsubmit="return confirm('Permanently erase this research data?');">
+                {% csrf_token %}
+                <button type="submit" class="btn" style="width: 100%; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.2);">Delete Mission Data</button>
+            </form>
+
+            <hr style="border: 0; border-top: 1px solid var(--accent); margin: 25px 0;">
+
+            <h3>Metadata</h3>
+            <div style="font-size: 0.9rem; color: var(--text-dim);">
+                <p><strong>Device:</strong> {{ data.device_info|default:"Submersible Sensor Array 01" }}</p>
+                <p><strong>Captured:</strong> {{ data.timestamp|date:"Y-m-d H:i"|default:"Recently Synchronized" }}</p>
+                <p><strong>Uploader:</strong> {{ data.uploader.username }}</p>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">Detections</h3>
+                <span
+                    style="font-size: 0.65rem; color: var(--primary); background: rgba(100, 255, 218, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(100, 255, 218, 0.2);">
+                    Model: YOLOv8-Marine
+                </span>
+            </div>
+
+            {% for detection in data.detections.all %}
+            <div
+                style="padding: 12px 0; border-bottom: 1px solid var(--accent); display: flex; gap: 15px; align-items: center;">
+                {% if detection.species.image_sample %}
+                <img src="{{ detection.species.image_sample.url }}"
+                    style="width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid var(--glass-border);">
+                {% else %}
+                <div
+                    style="width: 45px; height: 45px; border-radius: 6px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                    🐟</div>
+                {% endif %}
+                <div style="flex: 1;">
+                    <div style="color: var(--primary); font-weight: 600; font-size: 0.95rem;">{{ detection.species.name }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-dim);">Confidence: {{ detection.confidence|floatformat:2 }}%</div>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-dim); font-size: 0.85rem; padding: 20px 0; text-align: center;">Run AI detection
+                to see results.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

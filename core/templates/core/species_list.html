@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Species Lab | MarineVision{% endblock %}
+
+{% block content %}
+<header
+    style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+    <div>
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 5px;">Species <span
+                style="color: var(--primary);">Lab</span></h1>
+        <p style="color: var(--text-dim);">The central repository of marine biological intelligence and taxonomic
+            classifications.</p>
+    </div>
+    <div style="position: relative; min-width: 300px;">
+        <input type="text" id="speciesSearch" placeholder="Filter species by name or category..."
+            style="padding: 12px 15px 12px 40px; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-main); width: 100%;">
+        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
+    </div>
+</header>
+
+<div class="grid">
+    {% for species in species_list %}
+    <div class="card floating species-item" data-name="{{ species.name|lower }}"
+        data-category="{{ species.category|lower }}"
+        style="padding: 0; overflow: hidden; animation-delay: {{ forloop.counter0|add:1 }}s;">
+        {% if species.image_sample %}
+        <div style="height: 200px; overflow: hidden; position: relative;">
+            <img src="{{ species.image_sample.url }}" alt="{{ species.name }}"
+                style="width: 100%; height: 100%; object-fit: cover;">
+            <div style="position: absolute; top: 10px; right: 10px;">
+                <span
+                    style="background: rgba(10, 25, 47, 0.8); backdrop-filter: blur(5px); font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--primary); color: var(--primary);">
+                    {{ species.category }}
+                </span>
+            </div>
+        </div>
+        {% else %}
+        <div
+            style="height: 200px; background: var(--accent); display: flex; align-items: center; justify-content: center; position: relative;">
+            <div style="font-size: 3rem; opacity: 0.2;">🌊</div>
+            <div style="position: absolute; top: 10px; right: 10px;">
+                <span
+                    style="background: rgba(10, 25, 47, 0.8); backdrop-filter: blur(5px); font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--primary); color: var(--primary);">
+                    {{ species.category }}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="padding: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.4rem;">{{ species.name }}</h3>
+                    <p style="color: var(--primary); font-size: 0.85rem; font-style: italic; margin-top: 4px;">{{ species.scientific_name }}</p>
+                </div>
+            </div>
+
+            <p style="margin-top: 15px; font-size: 0.95rem; color: var(--text-dim); line-height: 1.6;">
+                {{ species.description|truncatewords:25|default:"No detailed biological profile available in the central database." }}
+            </p>
+
+            <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 0.75rem; color: var(--text-dim);">Status:</span>
+                <span
+                    style="font-size: 0.75rem; font-weight: 700; color: {% if species.conservation_status == 'Endangered' %}#ff4d4d{% else %}#4dff88{% endif %};">
+                    {{ species.conservation_status|upper|default:"STABLE" }}
+                </span>
+            </div>
+
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px;">
+                <a href="{% url 'species_detail' species.pk %}" class="btn btn-primary"
+                    style="flex: 2; text-align: center; padding: 10px;">Analyze Genetics</a>
+                <form action="{% url 'species_delete' species.pk %}" method="POST" style="flex: 1;" onsubmit="return confirm('Archive this species data?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn" style="width: 100%; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.2); padding: 10px;">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 60px;">
+        <div style="font-size: 4rem; margin-bottom: 20px;">🧬</div>
+        <h2 style="color: var(--text-main);">No Species Documents Found</h2>
+        <p style="color: var(--text-dim); margin-bottom: 30px;">The database is currently offline or lacks
+            classification data.</p>
+        <a href="{% url 'upload_data' %}" class="btn btn-solid">Upload Mission Data</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('speciesSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function (e) {
+                const term = e.target.value.toLowerCase();
+                const items = document.querySelectorAll('.species-item');
+
+                items.forEach(item => {
+                    const name = item.dataset.name || "";
+                    const cat = item.dataset.category || "";
+                    if (name.includes(term) || cat.includes(term)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

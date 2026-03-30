@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ species.name }} | Mission Intelligence{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'species_list' %}" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem;">&larr; Back to Species Lab</a>
+</div>
+
+<div style="display: flex; gap: 40px; align-items: start; flex-wrap: wrap;">
+    <!-- Profile Card -->
+    <div style="flex: 1; min-width: 350px;">
+        <div class="card floating" style="padding: 0; overflow: hidden;">
+            {% if species.image_sample %}
+            <img src="{{ species.image_sample.url }}" alt="{{ species.name }}"
+                style="width: 100%; height: 300px; object-fit: cover;">
+            {% else %}
+            <div
+                style="height: 300px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 5rem; opacity: 0.2;">🌊</span>
+            </div>
+            {% endif %}
+
+            <div style="padding: 30px;">
+                <h1 style="font-size: 2.2rem; margin-bottom: 5px;">{{ species.name }}</h1>
+                <p style="color: var(--primary); font-size: 1.1rem; font-style: italic; margin-bottom: 20px;">{{ species.scientific_name }}</p>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                    <span
+                        style="background: var(--accent); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; color: var(--primary); border: 1px solid var(--glass-border);">
+                        {{ species.category }}
+                    </span>
+                    <span
+                        style="border: 1px solid {% if species.conservation_status == 'Endangered' %}#ff4d4d{% else %}#4dff88{% endif %}; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; color: {% if species.conservation_status == 'Endangered' %}#ff4d4d{% else %}#4dff88{% endif %};">
+                        {{ species.conservation_status|upper|default:"STABLE" }}
+                    </span>
+                </div>
+
+                <h3 style="margin-bottom: 10px; color: var(--text-main);">Biological Description</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;">{{ species.description|default:"Detailed biological profile pending field data acquisition." }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Intelligence Panels -->
+    <div style="flex: 1.5; min-width: 400px; display: flex; flex-direction: column; gap: 20px;">
+        <!-- Stats Card -->
+        <div class="card">
+            <h3>Mission Intelligence</h3>
+            <div class="grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 20px;">
+                <div>
+                    <div class="stat-label">Total Detections</div>
+                    <div class="stat-value" style="font-size: 2rem; color: var(--primary);">{{ detection_count }}</div>
+                </div>
+                <div>
+                    <div class="stat-label">AI Accuracy</div>
+                    <div class="stat-value" style="font-size: 2rem; color: var(--secondary);">94.2%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Genetic Data Mockup -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="height: 120px; overflow: hidden; position: relative;">
+                <img src="{% static 'images/dna_preview.png' %}" alt="DNA Visualization"
+                    style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+                <div
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, var(--bg-card), transparent);">
+                </div>
+                <div style="position: absolute; top: 20px; left: 25px;">
+                    <h3 style="display: flex; align-items: center; gap: 10px; margin: 0;">
+                        <span>🧬</span> Nucleic Acid Profile
+                    </h3>
+                </div>
+            </div>
+            <div style="padding: 25px; padding-top: 10px;">
+                <div
+                    style="font-family: 'Courier New', Courier, monospace; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--accent); color: var(--primary); font-size: 0.85rem; word-break: break-all; line-height: 1.5;">
+                    <div style="opacity: 0.5; margin-bottom: 10px;">// GENOME_SEQUENCE_V1.04</div>
+                    {{ dna_sequence }}
+                    <div style="margin-top: 15px; opacity: 0.5;">[ SEQUENCE ENCRYPTED BY MARINE.VISION AI ]</div>
+                </div>
+
+                <div style="margin-top: 25px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 0.8rem; color: var(--text-dim);">Species Uniqueness Index</span>
+                        <span style="font-size: 0.8rem; color: var(--primary);">88%</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: var(--accent); border-radius: 3px;">
+                        <div
+                            style="width: 88%; height: 100%; background: var(--primary); border-radius: 3px; box-shadow: 0 0 10px var(--primary);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Card -->
+        <div class="card" style="border-color: var(--secondary); padding: 0; overflow: hidden;">
+            <div style="height: 150px; overflow: hidden; position: relative;">
+                <img src="{% static 'images/simulation_preview.png' %}" alt="Simulation Preview"
+                    style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;">
+                <div
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent, var(--bg-card));">
+                </div>
+                <div style="position: absolute; bottom: 15px; left: 20px;">
+                    <h3 style="margin: 0;">Strategic Actions</h3>
+                </div>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 5px;">Initiate deep-tissue simulation
+                    or environmental impact analysis for this species.</p>
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button id="runSimulation" class="btn btn-solid"
+                        style="background: var(--secondary); color: white; flex: 1;">Run Simulation</button>
+                    <button id="downloadBiodata" class="btn btn-primary" style="flex: 1;">Download Bio-Data</button>
+                </div>
+                <div id="simStatus" style="display: none; margin-top: 15px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--primary); margin-bottom: 5px;" id="simProgressText">
+                        Initializing Neural Core...</div>
+                    <div
+                        style="width: 100%; height: 4px; background: var(--accent); border-radius: 2px; overflow: hidden;">
+                        <div id="simProgressBar"
+                            style="width: 0%; height: 100%; background: var(--secondary); transition: width 0.3s;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const simBtn = document.getElementById('runSimulation');
+        const dlBtn = document.getElementById('downloadBiodata');
+        const statusDiv = document.getElementById('simStatus');
+        const progressBarr = document.getElementById('simProgressBar');
+        const progressText = document.getElementById('simProgressText');
+
+        if (simBtn) {
+            simBtn.addEventListener('click', function () {
+                simBtn.disabled = true;
+                simBtn.style.opacity = '0.5';
+                statusDiv.style.display = 'block';
+
+                let progress = 0;
+                const steps = [
+                    "Calibrating Marine Sensors...",
+                    "Mapping Biological Mesh...",
+                    "Running SPH Fluid Dynamics...",
+                    "Simulating Shoal Kinetics...",
+                    "Finalizing Projections..."
+                ];
+
+                const interval = setInterval(() => {
+                    progress += 5;
+                    progressBarr.style.width = progress + '%';
+
+                    const stepIdx = Math.floor((progress / 100) * steps.length);
+                    if (steps[stepIdx]) progressText.innerText = steps[stepIdx];
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        progressText.innerText = "Simulation Complete (Data Synced)";
+                        setTimeout(() => {
+                            simBtn.disabled = false;
+                            simBtn.style.opacity = '1';
+                        }, 2000);
+                    }
+                }, 100);
+            });
+        }
+
+        if (dlBtn) {
+            dlBtn.addEventListener('click', function () {
+                const csvContent = "data:text/csv;charset=utf-8,"
+                    + "Property,Value\n"
+                    + "Species Name,{{ species.name }}\n"
+                    + "Scientific Name,{{ species.scientific_name }}\n"
+                    + "Category,{{ species.category }}\n"
+                    + "Conservation Status,{{ species.conservation_status }}\n"
+                    + "DNA Sequence,{{ dna_sequence }}\n"
+                    + "Mission Detections,{{ detection_count }}\n"
+                    + "Accuracy Confidence,94.2%\n"
+                    + "Generated At," + new Date().toISOString();
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "{{ species.name|slugify }}_biodata.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

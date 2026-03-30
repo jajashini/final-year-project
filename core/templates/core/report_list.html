@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 40px;">
+    <h1>Research <span style="color: var(--primary);">Reports</span></h1>
+    <p style="color: var(--text-dim);">Automated scientific documentation of mission results.</p>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead
+            style="background: var(--accent); color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+            <tr>
+                <th style="padding: 15px 20px;">Report Title</th>
+                <th style="padding: 15px 20px;">Created</th>
+                <th style="padding: 15px 20px;">Data Source</th>
+                <th style="padding: 15px 20px; text-align: right;">Exports</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr style="border-bottom: 1px solid var(--accent);">
+                <td style="padding: 20px;">
+                    <div style="font-weight: 600; color: var(--text-main);">{{ report.title }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-dim);">{{ report.summary|truncatewords:10 }}</div>
+                </td>
+                <td style="padding: 20px; color: var(--text-dim); font-size: 0.9rem;">{{ report.created_at|date:"Y-m-d" }}</td>
+                <td style="padding: 20px; color: var(--text-dim); font-size: 0.9rem;">{{ report.data_source.title }}
+                </td>
+                <td style="padding: 20px; text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
+                    {% if report.pdf_report %}
+                    <a href="{{ report.pdf_report.url }}" class="btn btn-primary"
+                        style="padding: 6px 12px; font-size: 0.8rem;">PDF</a>
+                    {% endif %}
+                    <form action="{% url 'report_delete' report.pk %}" method="POST" onsubmit="return confirm('Erase this scientific record?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.2);">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="padding: 50px; text-align: center; color: var(--text-dim);">No reports generated
+                    yet. Run AI detection on a mission to generate documentation.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

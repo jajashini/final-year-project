@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1>Oceanic <span style="color: var(--primary);">Datasets</span></h1>
+    <a href="{% url 'upload_data' %}" class="btn btn-solid">New Mission</a>
+</div>
+
+<div class="grid">
+    {% for ds in datasets %}
+    <div class="card">
+        <h3>{{ ds.title }}</h3>
+        <p style="color: var(--text-dim); margin-bottom: 15px;">{{ ds.location|default:"Unknown Location" }} | {{ ds.upload_date|date:"M d, Y" }}</p>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span
+                style="font-size: 0.8rem; padding: 4px 10px; border-radius: 20px; background: var(--accent); color: var(--primary);">
+                {{ ds.file_type|upper }}
+            </span>
+            <span style="font-size: 0.8rem;"
+                class="{% if ds.is_processed %}status-processed{% else %}status-pending{% endif %}">
+                {% if ds.is_processed %}Processed{% else %}Pending{% endif %}
+            </span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <a href="{% url 'data_detail' ds.pk %}" class="btn btn-primary"
+                style="flex: 2; text-align: center;">Open Dataset</a>
+            <form action="{% url 'data_delete' ds.pk %}" method="POST" style="flex: 1;" onsubmit="return confirm('Purge this dataset from the neural core?');">
+                {% csrf_token %}
+                <button type="submit" class="btn" style="width: 100%; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.2); padding: 12px;">Delete</button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 100px;">
+        <p style="color: var(--text-dim);">No missions recorded yet. Start by uploading scientific data.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

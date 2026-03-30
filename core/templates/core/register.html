@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 450px; margin: 50px auto;">
+    <div class="card">
+        <h1 style="text-align: center;">Join the <span style="color: var(--primary);">Research</span></h1>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 30px;">Create your mission profile.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-solid" style="width: 100%; margin-top: 10px;">Create Profile</button>
+        </form>
+
+        <p style="text-align: center; margin-top: 25px; font-size: 0.9rem; color: var(--text-dim);">
+            Already a member? <a href="{% url 'login' %}" style="color: var(--primary); text-decoration: none;">Login to
+                Station</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

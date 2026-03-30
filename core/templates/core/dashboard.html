@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | MarineVision{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 40px;">
+    <h1 style="font-size: 2.5rem; color: var(--text-main); font-weight: 800;">Mission <span
+            style="color: var(--primary);">Control</span></h1>
+    <p style="color: var(--text-dim);">Monitoring underwater biodiversity and shoal kinetics.</p>
+</header>
+
+<div class="grid">
+    <!-- Stat Cards -->
+    <div class="card floating">
+        <div class="stat-label">Total Missions</div>
+        <div class="stat-value">{{ total_data }}</div>
+        <p style="color: var(--text-dim); font-size: 0.8rem;">Datasets processed</p>
+    </div>
+
+    <div class="card floating" style="animation-delay: 0.5s;">
+        <div class="stat-label">Species Library</div>
+        <div class="stat-value">{{ total_species }}</div>
+        <p style="color: var(--text-dim); font-size: 0.8rem;">Classifications active</p>
+    </div>
+
+    <div class="card floating" style="animation-delay: 1s;">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div class="stat-label">AI Detections</div>
+            <span
+                style="font-size: 0.6rem; color: var(--primary); border: 1px solid var(--primary); padding: 1px 4px; border-radius: 3px; opacity: 0.8;">YOLOv8</span>
+        </div>
+        <div class="stat-value">{{ total_detections }}</div>
+        <p style="color: var(--text-dim); font-size: 0.8rem;">Automated identifications</p>
+    </div>
+</div>
+
+<div class="grid" style="margin-top: 25px; grid-template-columns: 2fr 1fr;">
+    <!-- Main Chart -->
+    <div class="card">
+        <h3>Species Distribution</h3>
+        <div class="chart-container">
+            <canvas id="speciesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card">
+        <h3>Recent Detections</h3>
+        <div style="margin-top: 15px;">
+            {% for detection in recent_detections %}
+            <a href="{% url 'data_detail' detection.data.pk %}"
+                style="text-decoration: none; display: block; padding: 12px; border-radius: 8px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid transparent; transition: all 0.2s;"
+                onmouseover="this.style.background='rgba(100, 255, 218, 0.05)'; this.style.borderColor='rgba(100, 255, 218, 0.1)';"
+                onmouseout="this.style.background='rgba(255, 255, 255, 0.03)'; this.style.borderColor='transparent';">
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    {% if detection.species.image_sample %}
+                    <img src="{{ detection.species.image_sample.url }}"
+                        style="width: 42px; height: 42px; border-radius: 6px; object-fit: cover; border: 1px solid var(--glass-border);">
+                    {% else %}
+                    <div
+                        style="width: 42px; height: 42px; border-radius: 6px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                        🐟</div>
+                    {% endif %}
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--primary); font-weight: 700; font-size: 0.9rem;">{{ detection.species.name }}</span>
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #4dff88;">{{ detection.confidence|floatformat:1 }}%</span>
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 2px;">
+                            Mission: <span style="color: var(--text-main);">{{ detection.data.title|truncatechars:25 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <p style="color: var(--text-dim); text-align: center; padding: 20px;">No detections yet.</p>
+            {% endfor %}
+        </div>
+        <a href="{% url 'data_list' %}" class="btn btn-primary"
+            style="margin-top: 20px; width: 100%; text-align: center;">View All Datasets</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('speciesChart').getContext('2d');
+
+        // Pass data from Django to JavaScript safely
+        const labels = JSON.parse('{{ chart_labels|safe }}');
+        const dataValues = JSON.parse('{{ chart_data|safe }}');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Detections',
+                    data: dataValues,
+                    backgroundColor: 'rgba(100, 255, 218, 0.2)',
+                    borderColor: 'rgba(100, 255, 218, 1)',
+                    borderWidth: 2,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#8892b0'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#8892b0'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
